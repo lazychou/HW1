@@ -5,7 +5,7 @@ from keras.layers import LSTM
 from keras.layers.core import Dense, RepeatVector
 import math
 
-def read(filename):
+def read(filename,n):
     path = './data/' + filename + '.csv'
     with open(path,newline='',encoding="utf-8") as csvfile:
         rows = csv.reader(csvfile)
@@ -13,7 +13,7 @@ def read(filename):
         for row in rows:
             result.append([row[0],row[2],row[3],row[4]])
      
-    return result[1:]
+    return result[n:]
 
 
 
@@ -65,29 +65,26 @@ def buildseq(data,m,n):
 
 def main():
     #兩筆資料時間不連續
-    d1 = read('2017')
-    d2 = read('台灣電力公司_過去電力供需資訊')
+    d1 = read('2017',1)
+    d2 = read('台灣電力公司_過去電力供需資訊',335)
 
     M1,M2,M3,M4,M5,M6=2019,12,31,37351,4398,16
-    cd1 = list()
-    cd2 = list()
+    cd = list()
+
     for i in d1 :
         temp = [float(i[0][0:4])/M1,float(i[0][4:6])/M2,float(i[0][6:])/M3,float(i[1])/M4,float(i[2])/M5,float(i[3])/M6]
-        cd1.append(temp)
+        cd.append(temp)
+        
     for i in d2 :
         temp = [float(i[0][0:4])/M1,float(i[0][4:6])/M2,float(i[0][6:])/M3,float(i[1])/M4,float(i[2])/M5,float(i[3])/M6]
-        cd2.append(temp)
+        cd.append(temp)
+        
+
     #建立序列
-    x1,y1 = buildseq(cd1,7,8)
-    x2,y2 = buildseq(cd2,7,8)
-    X1 = np.array(x1)
-    Y1 = np.array(y1)
-    X2 = np.array(x2)
-    Y2 = np.array(y2) 
-
-    X = np.concatenate((X1,X2),axis = 0)
-    Y = np.concatenate((Y1,Y2),axis = 0)
-
+    x,y = buildseq(cd,7,8)
+    X = np.array(x)
+    Y = np.array(y)
+   
     model = build_model(8)
     model.fit(X,Y,epochs=200, batch_size=100)
 
